@@ -8,6 +8,20 @@
       "when": 1765661791459,
       "tag": "0000_thankful_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765670648380,
+      "tag": "0001_dusty_zarda",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765672044989,
+      "tag": "0002_solid_omega_sentinel",
+      "breakpoints": true
     }
   ]
 }

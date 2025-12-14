@@ -48,14 +48,17 @@ class ApiClient {
   }
 
   async post<T>(path: string, body?: unknown, options?: RequestInit): Promise<T> {
+    // Extract only what we need from options - explicitly exclude 'body' and 'method'
+    const { headers: optionHeaders, signal } = options || {};
+
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...(optionHeaders as Record<string, string>),
       },
       body: body ? JSON.stringify(body) : undefined,
-      ...options,
+      signal,
     });
 
     if (!response.ok) {
