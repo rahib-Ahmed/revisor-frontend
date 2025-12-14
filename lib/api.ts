@@ -75,3 +75,73 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+
+class AuthenticatedApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  private async fetchWithAuth<T>(
+    path: string,
+    options: RequestInit & { token: string }
+  ): Promise<T> {
+    const { token, ...fetchOptions } = options;
+
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      ...fetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        ...fetchOptions.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const errorBody = (await response.json().catch(() => null)) as ErrorResponse | null;
+      throw new ApiError(
+        response.status,
+        errorBody?.error?.code || 'UNKNOWN_ERROR',
+        errorBody?.error?.message || `API error: ${response.status}`
+      );
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    return response.json();
+  }
+
+  async getContentItems(token: string): Promise<{ items: Record<string, unknown>[] }> {
+    return this.fetchWithAuth('/content-items', {
+      method: 'GET',
+      token,
+    });
+  }
+
+  async getContentItem(id: string, token: string): Promise<Record<string, unknown>> {
+    return this.fetchWithAuth(`/content-items/${id}`, {
+      method: 'GET',
+      token,
+    });
+  }
+
+  async deleteContentItem(id: string, token: string): Promise<void> {
+    return this.fetchWithAuth(`/content-items/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  }
+
+  async retryProcessing(id: string, token: string): Promise<Record<string, unknown>> {
+    return this.fetchWithAuth(`/content-items/${id}/process`, {
+      method: 'POST',
+      token,
+    });
+  }
+}
+
+export const contentApi = new AuthenticatedApiClient(API_BASE_URL);
